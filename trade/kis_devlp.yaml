@@ -1,0 +1,28 @@
+#홈페이지에서 API서비스 신청시 받은 Appkey, Appsecret 값 설정
+#실전투자
+my_app: "PSB6HwgvdOX1jTTcEnhf8SzwQMo8L11tOCeu"
+my_sec: "FuvzToiYAkDLlfOUv+gcDkz7tAGlfC/Et7Ua99TIlFvn/JPzr/CiCiIFUSRk8Hp9F1tuyWsqLyBJ4dCHpFHcbTMxqlk6qUudA5grXQ8IgebLU2UJQBRWoHN7Jif9sihwvlrVD+huL675EkE68I+9+cF7sXRd9AfaNh4B4X+rjZxoEs2WTeQ="
+
+#모의투자
+paper_app: "PS7zc8Gigb7spxYKY70uQdKvutV8ZS1DuvER"
+paper_sec: "5P1Uw06aGaq1f3u/QLC5E8KfX0vE4bR1xK6zn5BQdbLfZmoiuT3JXseXA8qpmgJbMuucCnzfigkIh1RUjUn3W5gXYT0ExKrEGur1V5fXtDritH86WagMtKTUh37AbT6jOU5ORi2Q6S6syupPmTwW7wCMHLvoZQX3WtC7OvXXR8J2go7s99Y="
+
+#계좌번호 앞 8자리
+my_acct_stock: "64477697"
+my_acct_future: ""
+my_paper_stock: "50114612"
+my_paper_future: ""
+
+#계좌번호 뒤 2자리
+my_prod: "01"
+
+#domain info
+prod: "https://openapi.koreainvestment.com:9443" #서비스
+ops: "ws://ops.koreainvestment.com:21000" #웹소켓
+vps: "https://openapivts.koreainvestment.com:29443" #모의투자서비스
+vops: "ws://ops.koreainvestment.com:31000" #모의투자웹소켓
+
+my_token: ""
+
+# User-Agent; Chrome > F12 개발자 모드 > Console > navigator.userAgent > 자신의 userAgent 확인가능
+my_agent : "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36"
