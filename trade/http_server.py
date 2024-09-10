@@ -2,9 +2,12 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS  # 추가
 import kis_auth as ka
 import kis_domstk as kb
+import kis_paper_auth as kpa
+import kis_paper_domstk as kpb
 
 # KIS 인증
 ka.auth()
+kpa.auth()
 
 app = Flask(__name__)
 CORS(app)  # CORS 활성화
