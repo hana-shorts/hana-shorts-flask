@@ -6,6 +6,8 @@ from flask_socketio import SocketIO, emit
 import kis_auth as ka
 import kis_domstk as kb
 from threading import Event, Thread, Lock
+from pykrx import stock  # 추가: pykrx 라이브러리 임포트
+from datetime import datetime, timedelta
 
 # KIS 인증
 ka.auth()
@@ -32,6 +34,12 @@ daily_thread_lock = Lock()
 stockinfo_stop_event = Event()
 stockinfo_thread = None
 stockinfo_thread_lock = Lock()
+
+# 차트 데이터 전용 전역 변수
+chart_data_stop_event = Event()
+chart_data_thread = None
+chart_data_thread_lock = Lock()
+
 
 @socketio.on('connect')
 def handle_connect():
@@ -84,7 +92,7 @@ def fetch_orderbook_data(stock_code):
         ask_data = kb.get_inquire_asking_price_exp_ccn(itm_no=stock_code)
         ask_data_dict = ask_data.to_dict(orient='records')
         socketio.emit('orderbook_update', ask_data_dict)
-        socketio.sleep(5)
+        socketio.sleep(0.3)
 
 @socketio.on('stop_orderbook_data')
 def handle_stop_orderbook_request():
@@ -122,7 +130,7 @@ def fetch_settlement_data(stock_code):
         settlement_data = kb.get_inquire_ccnl(itm_no=stock_code)
         settlement_data_dict = settlement_data.to_dict(orient='records')
         socketio.emit('settlement_update', settlement_data_dict)
-        socketio.sleep(5)
+        socketio.sleep(0.3)
 
 @socketio.on('stop_settlement_data')
 def handle_stop_settlement_request():
@@ -160,7 +168,7 @@ def fetch_daily_data(stock_code):
         daily_data = kb.get_inquire_daily_price(itm_no=stock_code, period_code="D")
         daily_data_dict = daily_data.to_dict(orient='records')
         socketio.emit('daily_update', daily_data_dict)
-        socketio.sleep(5)
+        socketio.sleep(0.3)
 
 @socketio.on('stop_daily_data')
 def handle_stop_daily_request():
@@ -198,7 +206,7 @@ def fetch_stock_info(stock_code):
         stock_info = kb.get_inquire_price(itm_no=stock_code)
         stock_info_dict = stock_info.to_dict(orient='records')
         socketio.emit('stock_info_update', stock_info_dict)
-        socketio.sleep(5)
+        socketio.sleep(0.3)
 
 @socketio.on('stop_stock_info')
 def handle_stop_stock_info_request():
@@ -210,6 +218,55 @@ def handle_stop_stock_info_request():
             stockinfo_thread.join()
             stockinfo_thread = None
             stockinfo_stop_event.clear()
+
+
+@socketio.on('request_chart_data')
+def handle_chart_data_request(data):
+    global chart_data_stop_event, chart_data_thread
+
+    with chart_data_thread_lock:
+        if chart_data_thread is not None:
+            chart_data_stop_event.set()
+            chart_data_thread.join()
+            chart_data_stop_event.clear()
+
+        stock_code = data.get('code')
+        if not stock_code:
+            emit('error', {'message': 'Stock code is required'})
+            return
+
+        print(f"Fetching chart data for stock code: {stock_code}")
+
+        chart_data_thread = Thread(target=fetch_chart_data, args=(stock_code,))
+        chart_data_thread.start()
+
+def fetch_chart_data(stock_code):
+    # 10년 전부터 오늘까지의 날짜 계산
+    start_date = (datetime.today() - timedelta(days=3650)).strftime('%Y%m%d')
+    end_date = datetime.today().strftime('%Y%m%d')
+
+    while not chart_data_stop_event.is_set():
+        # pykrx 라이브러리를 사용해 데이터 가져오기
+        chart_data = stock.get_market_ohlcv(start_date, end_date, stock_code)
+
+        # '날짜' 열을 문자열로 변환
+        chart_data.index = chart_data.index.strftime('%Y-%m-%d')
+
+        chart_data_dict = chart_data.reset_index().to_dict(orient='records')
+        socketio.emit('chart_data_update', chart_data_dict)
+        socketio.sleep(3600)
+
+@socketio.on('stop_chart_data')
+def handle_stop_chart_data_request():
+    global chart_data_stop_event, chart_data_thread
+
+    with chart_data_thread_lock:
+        if chart_data_thread is not None:
+            chart_data_stop_event.set()
+            chart_data_thread.join()
+            chart_data_thread = None
+            chart_data_stop_event.clear()
+
 
 if __name__ == '__main__':
     socketio.run(app, port=5001)

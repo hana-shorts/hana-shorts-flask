@@ -1,3 +1,6 @@
+from pykrx import stock
+from pykrx import bond
+
 import kis_auth as ka
 import kis_domstk as kb
 
@@ -58,10 +61,38 @@ kpa.auth()
 # rt_data = kb.get_inquire_daily_ccld_lst(dv="01")
 # print(rt_data)
 
-# [국내주식] 주문/계좌 > 주식잔고조회
-rt_data = kpb.get_inquire_balance_lst()
-print(rt_data)
+# # [국내주식] 주문/계좌 > 주식잔고조회
+# rt_data = kpb.get_inquire_balance_lst()
+# print(rt_data)
 
 # # [국내주식] 주문/계좌 > 주식잔고조회
 # rt_data = kpb.get_inquire_balance_obj()
 # print(rt_data)
+
+# # [국내주식] 주문/계좌 > 주식정정취소가능주문조회[v1_국내주식-004]
+# rt_data = kb.get_inquire_psbl_rvsecncl_lst()
+# print(rt_data)
+
+# # [국내주식] 주문/계좌 > 매수가능조회
+# rt_data = kpb.get_inquire_psbl_order("005930")
+# print(rt_data)
+
+
+# # [국내주식] 기본시세 > 국내주식기간별시세(일/주/월/년)
+# rt_data = kpb.get_inquire_daily_itemchartprice(itm_no="005930", inqr_strt_dt="20240801", inqr_end_dt="20240831")
+# print(rt_data)
+
+# # [국내주식] 기본시세 > 주식당일분봉조회
+# rt_data = kb.get_inquire_time_itemchartprice("000660")
+# print(rt_data)
+
+
+df = stock.get_market_ohlcv("20140801", "20240913", "005930")
+print(df)
+
+# from datetime import datetime, timedelta  # 추가
+# start_date = (datetime.today() - timedelta(days=365*5)).strftime('%Y%m%d')
+# end_date = datetime.today().strftime('%Y%m%d')
+#
+# print(start_date)
+# print(end_date)

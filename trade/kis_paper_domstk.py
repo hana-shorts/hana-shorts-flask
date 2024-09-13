@@ -367,7 +367,7 @@ def get_inquire_balance_lst(tr_cont="", FK100="", NK100="", dataframe=None):  # 
 # Output: DataFrame (Option) output2 -
 def get_inquire_psbl_order(pdno="", ord_unpr=0, tr_cont="", FK100="", NK100="", dataframe=None):  # 국내주식주문 > 매수가능조회
     url = '/uapi/domestic-stock/v1/trading/inquire-psbl-order'
-    tr_id = "TTTC8908R"
+    tr_id = "VTTC8908R"
     params = {
         "CANO": kis.getTREnv().my_acct,             # 종합계좌번호 8자리
         "ACNT_PRDT_CD": kis.getTREnv().my_prod,     # 계좌상품코드 2자리
@@ -1058,45 +1058,7 @@ def get_inquire_member(div_code="J", itm_no="", tr_cont="", FK100="", NK100="", 
 # 국내주식기간별시세(일/주/월/년) Object를 DataFrame 으로 반환
 # Input: None (Option) 상세 Input값 변경이 필요한 경우 API문서 참조
 # Output: DataFrame (Option) output
-def get_inquire_daily_itemchartprice(div_code="J", itm_no="", tr_cont="", inqr_strt_dt=None, inqr_end_dt=None, period_code="D", adj_prc="1", FK100="", NK100="", dataframe=None):  # [국내주식] 기본시세 > 국내주식기간별시세(일/주/월/년)
-    url = '/uapi/domestic-stock/v1/quotations/inquire-daily-itemchartprice'
-    tr_id = "FHKST03010100"  # 주식현재가 회원사
-
-    if inqr_strt_dt is None:
-        inqr_strt_dt = (datetime.now()-timedelta(days=14)).strftime("%Y%m%d")   # 시작일자 값이 없으면 현재일자
-    if inqr_end_dt is None:
-        inqr_end_dt  = datetime.today().strftime("%Y%m%d")   # 종료일자 값이 없으면 현재일자
-
-    print(inqr_strt_dt)
-    print(inqr_end_dt)
-    params = {
-        "FID_COND_MRKT_DIV_CODE": div_code, # 시장 분류 코드  J : 주식/ETF/ETN, W: ELW
-        "FID_INPUT_ISCD": itm_no,           # 종목번호 (6자리) ETN의 경우, Q로 시작 (EX. Q500001)
-        "FID_INPUT_DATE_1": inqr_strt_dt,   # 입력 날짜 (시작) 조회 시작일자 (ex. 20220501)
-        "FID_INPUT_DATE_2": inqr_end_dt,    # 입력 날짜 (종료) 조회 종료일자 (ex. 20220530)
-        "FID_PERIOD_DIV_CODE": period_code, # 기간분류코드 D:일봉, W:주봉, M:월봉, Y:년봉
-        "FID_ORG_ADJ_PRC": adj_prc          # 수정주가 0:수정주가 1:원주가
-    }
-    res = kis._url_fetch(url, tr_id, tr_cont, params)
-
-    # print(res.getBody())  # 오류 원인 확인 필요시 사용
-    # Assuming 'output' is a dictionary that you want to convert to a DataFrame
-    current_data = pd.DataFrame(res.getBody().output1, index=[0])  # 호가조회  * getBody() kis_auth.py 존재
-
-    dataframe = current_data
-
-    return dataframe
-
-
-##############################################################################################
-# [국내주식] 기본시세 > 국내주식기간별시세(일/주/월/년)
-# 국내주식기간별시세(일/주/월/년) API입니다.
-# 실전계좌/모의계좌의 경우, 한 번의 호출에 최대 100건까지 확인 가능합니다.
-##############################################################################################
-# 국내주식기간별시세(일/주/월/년) Object를 DataFrame 으로 반환
-# Input: None (Option) 상세 Input값 변경이 필요한 경우 API문서 참조
-# Output: DataFrame (Option) output
-def get_inquire_daily_itemchartprice(output_dv="1", div_code="J", itm_no="", inqr_strt_dt=None, inqr_end_dt=None, period_code="D", adj_prc="1", tr_cont="", FK100="", NK100="", dataframe=None):  # [국내주식] 기본시세 > 국내주식기간별시세(일/주/월/년)
+def get_inquire_daily_itemchartprice(output_dv="2", div_code="J", itm_no="", inqr_strt_dt="", inqr_end_dt="", period_code="D", adj_prc="1", tr_cont="", FK100="", NK100="", dataframe=None):  # [국내주식] 기본시세 > 국내주식기간별시세(일/주/월/년)
     url = '/uapi/domestic-stock/v1/quotations/inquire-daily-itemchartprice'
     tr_id = "FHKST03010100"  # 국내주식기간별시세
 

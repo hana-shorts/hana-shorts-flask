@@ -44,14 +44,14 @@ kospi_option.click()
 # 페이지가 새로 로드될 시간을 기다림
 time.sleep(3)  # 페이지 로드 시간이 필요할 경우 추가적인 대기 시간을 설정
 
-# 거래량 버튼을 2번 클릭 (첫 번째 클릭으로 정렬하고 두 번째 클릭으로 다시 정렬)
-for _ in range(2):
-    volume_button = WebDriverWait(driver, 10).until(
-        EC.element_to_be_clickable((By.XPATH, '//span[@title="거래량"]/..'))
-    )
-    volume_button.click()
-    time.sleep(1)  # 클릭 후 잠시 대기
-
+# # 거래량 버튼을 2번 클릭 (첫 번째 클릭으로 정렬하고 두 번째 클릭으로 다시 정렬)
+# for _ in range(2):
+#     volume_button = WebDriverWait(driver, 10).until(
+#         EC.element_to_be_clickable((By.XPATH, '//span[@title="거래량"]/..'))
+#     )
+#     volume_button.click()
+#     time.sleep(1)  # 클릭 후 잠시 대기
+#
 # 버튼을 클릭하여 데이터를 로드
 button = WebDriverWait(driver, 10).until(
     EC.element_to_be_clickable((By.CSS_SELECTOR, 'button[data-test="quote-tab"][data-test-tab-id="1"]'))

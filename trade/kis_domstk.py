@@ -1202,7 +1202,7 @@ def get_inquire_daily_overtimeprice(output_dv="1", div_code="J", itm_no="", tr_c
 # 주식당일분봉조회 Object를 DataFrame 으로 반환
 # Input: None (Option) 상세 Input값 변경이 필요한 경우 API문서 참조
 # Output: DataFrame (Option) output
-def get_inquire_time_itemchartprice(output_dv="1", div_code="J", itm_no="", inqr_hour=None, incu_yn="N", tr_cont="", FK100="", NK100="", dataframe=None):  # [국내주식] 기본시세 > 주식당일분봉조회
+def get_inquire_time_itemchartprice(output_dv="2", div_code="J", itm_no="", inqr_hour=None, incu_yn="N", tr_cont="", FK100="", NK100="", dataframe=None):  # [국내주식] 기본시세 > 주식당일분봉조회
     url = '/uapi/domestic-stock/v1/quotations/inquire-time-itemchartprice'
     tr_id = "FHKST03010200"  # 주식당일분봉조회
 
@@ -1216,6 +1216,7 @@ def get_inquire_time_itemchartprice(output_dv="1", div_code="J", itm_no="", inqr
 
         # HHMMSS 형식으로 조합
         inqr_hour  = f"{hour:02d}{minute:02d}{second:02d}" # 현재 시간 가져오기
+        print(inqr_hour)
 
     params = {
         "FID_ETC_CLS_CODE": "",              # 시장 분류 코드     J : 주식/ETF/ETN, W: ELW
@@ -1402,3 +1403,24 @@ def get_inquire_investor(div_code="J", itm_no="", tr_cont="", FK100="", NK100=""
     return dataframe
 
 
+def get_lendable_by_company(tr_cont="", FK100="", NK100="", dataframe=None):  # [국내주식] 기본시세 > NAV 비교추이(종목)
+    url = '/uapi/domestic-stock/v1/quotations/lendable-by-company'
+    tr_id = "CTSC2702R "  # NAV 비교추이(종목)
+
+    params = {
+        "EXCG_DVSN_CD": "00", # 시장 분류 코드  J : 주식/ETF/ETN, W: ELW
+        # "PDNO":, # 종목번호 (6자리) ETN의 경우, Q로 시작 (EX. Q500001)
+        "THCO_STLN_PSBL_YN": "Y",
+        "INQR_DVSN_1": "0",
+        # "CTX_AREA_FK200": "",
+        # "CTX_AREA_NK100": ""
+    }
+    res = kis._url_fetch(url, tr_id, tr_cont, params)
+
+
+    current_data = pd.DataFrame(res.getBody().output1)  # 현재가  * getBody() kis_auth.py 존재
+
+
+    dataframe = current_data
+
+    return dataframe
