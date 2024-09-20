@@ -79,10 +79,10 @@ try:
         change_value = data[5]
         change_percent = data[6]
         volume = data[7]
-        rate_time = current_time
+        update_time = current_time
 
         # 프로시저 호출
-        cursor.callproc("update_or_insert_stock_data", [
+        cursor.callproc("update_or_insert_market_stock_price", [
             stock_name,
             closing_price,
             high_price,
@@ -90,7 +90,7 @@ try:
             change_value,
             change_percent,
             volume,
-            rate_time
+            update_time
         ])
 
     # 커밋

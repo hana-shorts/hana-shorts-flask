@@ -86,9 +86,14 @@ kpa.auth()
 # rt_data = kb.get_inquire_time_itemchartprice("000660")
 # print(rt_data)
 
+# df = stock.get_market_ohlcv("20240918", market="KOSPI")
+# print(df)
 
-df = stock.get_market_ohlcv("20140801", "20240913", "005930")
-print(df)
+# tickers = stock.get_market_ticker_list()
+# print(tickers)
+
+# df = stock.get_market_ohlcv("20140914","20240914", "475150")
+# print(df)
 
 # from datetime import datetime, timedelta  # 추가
 # start_date = (datetime.today() - timedelta(days=365*5)).strftime('%Y%m%d')

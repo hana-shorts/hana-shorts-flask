@@ -92,7 +92,7 @@ def fetch_orderbook_data(stock_code):
         ask_data = kb.get_inquire_asking_price_exp_ccn(itm_no=stock_code)
         ask_data_dict = ask_data.to_dict(orient='records')
         socketio.emit('orderbook_update', ask_data_dict)
-        socketio.sleep(0.3)
+        socketio.sleep(0.5)
 
 @socketio.on('stop_orderbook_data')
 def handle_stop_orderbook_request():
@@ -130,7 +130,7 @@ def fetch_settlement_data(stock_code):
         settlement_data = kb.get_inquire_ccnl(itm_no=stock_code)
         settlement_data_dict = settlement_data.to_dict(orient='records')
         socketio.emit('settlement_update', settlement_data_dict)
-        socketio.sleep(0.3)
+        socketio.sleep(0.5)
 
 @socketio.on('stop_settlement_data')
 def handle_stop_settlement_request():
@@ -168,7 +168,7 @@ def fetch_daily_data(stock_code):
         daily_data = kb.get_inquire_daily_price(itm_no=stock_code, period_code="D")
         daily_data_dict = daily_data.to_dict(orient='records')
         socketio.emit('daily_update', daily_data_dict)
-        socketio.sleep(0.3)
+        socketio.sleep(0.5)
 
 @socketio.on('stop_daily_data')
 def handle_stop_daily_request():
@@ -206,7 +206,7 @@ def fetch_stock_info(stock_code):
         stock_info = kb.get_inquire_price(itm_no=stock_code)
         stock_info_dict = stock_info.to_dict(orient='records')
         socketio.emit('stock_info_update', stock_info_dict)
-        socketio.sleep(0.3)
+        socketio.sleep(0.5)
 
 @socketio.on('stop_stock_info')
 def handle_stop_stock_info_request():

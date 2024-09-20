@@ -63,7 +63,7 @@ for i in range(len(subject_tags)):
     published_time = published_datetime.strftime('%H:%M')
 
     # 프로시저 호출을 통한 데이터 삽입
-    cursor.callproc("insert_news_article", [
+    cursor.callproc("insert_article_recent", [
         title,
         article_link,
         thumb_url,

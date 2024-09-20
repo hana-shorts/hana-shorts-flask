@@ -24,7 +24,7 @@ service = Service(chrome_driver_path)
 driver = webdriver.Chrome(service=service, options=options)
 
 # Investing.com 페이지로 이동
-url = "https://kr.investing.com/indices/major-indices"
+url = "https://kr.investing.com/commodities/real-time-futures"
 driver.get(url)
 
 # 버튼을 클릭하여 데이터를 로드
@@ -46,7 +46,7 @@ try:
         data = [cell.text for cell in cells]
 
         # 필요한 데이터 추출
-        index_name = data[1]
+        commodity_name = data[1]
         period_daily = data[2]
         period_weekly = data[3]
         period_monthly = data[4]
@@ -55,8 +55,8 @@ try:
         period_3years = data[7]
 
         # 프로시저 호출
-        cursor.callproc("update_or_insert_index_period_data", [
-            index_name,
+        cursor.callproc("update_or_insert_market_commodity_performance", [
+            commodity_name,
             period_daily,
             period_weekly,
             period_monthly,
@@ -84,4 +84,4 @@ end_time = time.time()
 execution_time = end_time - start_time
 print(f"Execution time: {execution_time:.2f} seconds")
 
-print("Index period data updated successfully!")
+print("Commodity period data updated successfully!")
