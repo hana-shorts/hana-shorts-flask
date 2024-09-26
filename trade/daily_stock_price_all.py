@@ -10,24 +10,26 @@ def get_market_data_for_dates(start_date, end_date):
     date_range = pd.date_range(start=start_date, end=end_date, freq='B')  # 'B'는 영업일만 포함
 
     all_data = []
+    markets = ["KOSPI", "KOSDAQ"]  # 가져올 시장 리스트
 
     for date in tqdm(date_range, desc="데이터 가져오는 중"):
         date_str = date.strftime("%Y%m%d")
-        try:
-            df = stock.get_market_ohlcv(date_str, market="KOSPI")  # 날짜별로 KOSPI 데이터 가져오기
-            df['date'] = date_str  # 거래일자 추가
-            # 거래량 또는 종가가 0인 데이터는 주말/공휴일일 수 있으므로 제외
-            if (df[['거래량', '시가', '고가', '저가', '종가']] == 0).all().any():
-                print(f"{date_str}의 데이터는 0값이므로 제외합니다.")
-                continue  # 해당 날짜 데이터를 건너뛰고 다음 날짜로 넘어감
-            all_data.append(df)
-        except Exception as e:
-            print(f"Error on {date_str}: {e}")
+        for market in markets:
+            try:
+                df = stock.get_market_ohlcv(date_str, market=market)  # 날짜별로 시장 데이터 가져오기
+                df['date'] = date_str  # 거래일자 추가
+                # 거래량 또는 종가가 0인 데이터는 주말/공휴일일 수 있으므로 제외
+                if (df[['거래량', '시가', '고가', '저가', '종가']] == 0).all().any():
+                    print(f"{date_str}({market})의 데이터는 0값이므로 제외합니다.")
+                    continue  # 해당 날짜 데이터를 건너뛰고 다음 날짜로 넘어감
+                all_data.append(df)
+            except Exception as e:
+                print(f"Error on {date_str} ({market}): {e}")
 
     return pd.concat(all_data)
 
 def insert_data_to_db(df):
-    """ KOSPI 데이터를 DB에 삽입하는 함수 """
+    """ KOSPI 및 KOSDAQ 데이터를 DB에 삽입하는 함수 """
     connection = get_db_connection()  # db_connection.py에서 가져온 함수로 DB 연결
     cursor = connection.cursor()
 
@@ -58,7 +60,8 @@ def insert_data_to_db(df):
 
 def process_kospi_data():
     """ 최근 10년치 데이터를 가져와 DB에 삽입하는 함수 """
-    end_date = datetime.today()  # 오늘 날짜
+    # end_date = datetime.today() # 오늘 날짜
+    end_date = datetime.today() - timedelta(days=1)  # 어제 날짜
     start_date = end_date - timedelta(days=365 * 10)  # 10년 전 날짜
 
     # 최근 10년간 영업일 데이터를 가져오기

@@ -82,7 +82,7 @@ try:
         update_time = current_time
 
         # 프로시저 호출
-        cursor.callproc("update_or_insert_market_stock_price", [
+        cursor.callproc("update_or_insert_market_stock_kospi_price", [
             stock_name,
             closing_price,
             high_price,

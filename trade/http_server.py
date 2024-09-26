@@ -139,7 +139,7 @@ def get_chart():
     start_date = (datetime.today() - timedelta(days=365*10)).strftime('%Y%m%d')
     end_date = datetime.today().strftime('%Y%m%d')
 
-    chart_data = stock.get_market_ohlcv_by_date(start_date, end_date, stock_code)
+    chart_data = stock.get_market_ohlcv(start_date, end_date, stock_code)
     chart_data = chart_data[chart_data['거래량'] > 0]
     chart_data.index = chart_data.index.strftime('%Y-%m-%d')
     chart_data_dict = chart_data.reset_index().to_dict(orient='records')

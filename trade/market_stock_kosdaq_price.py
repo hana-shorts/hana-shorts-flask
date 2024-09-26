@@ -6,6 +6,7 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from db_connection import get_db_connection  # DB 연결 설정 가져오기
+from datetime import datetime
 
 # 시작 시간 기록
 start_time = time.time()
@@ -26,7 +27,7 @@ service = Service(chrome_driver_path)
 driver = webdriver.Chrome(service=service, options=options)
 
 # Investing.com 페이지로 이동
-url = "https://kr.investing.com/equities"
+url = "https://kr.investing.com/equities/south-korea"
 driver.get(url)
 
 # 두 번째 드롭다운 열기
@@ -37,7 +38,7 @@ second_dropdown.click()
 
 # '코스피지수' 옵션을 선택
 kospi_option = WebDriverWait(driver, 10).until(
-    EC.element_to_be_clickable((By.XPATH, '//span[text()="코스피지수"]'))
+    EC.element_to_be_clickable((By.XPATH, '//span[text()="코스닥"]'))
 )
 kospi_option.click()
 
@@ -52,14 +53,8 @@ time.sleep(3)  # 페이지 로드 시간이 필요할 경우 추가적인 대기
 #     volume_button.click()
 #     time.sleep(1)  # 클릭 후 잠시 대기
 #
-# 버튼을 클릭하여 데이터를 로드
-button = WebDriverWait(driver, 10).until(
-    EC.element_to_be_clickable((By.CSS_SELECTOR, 'button[data-test="quote-tab"][data-test-tab-id="1"]'))
-)
-button.click()
-
-# 페이지가 새로 로드될 시간을 기다림
-time.sleep(3)  # 페이지 로드 시간이 필요할 경우 추가적인 대기 시간을 설정
+# # 페이지가 새로 로드될 시간을 기다림
+# time.sleep(3)  # 페이지 로드 시간이 필요할 경우 추가적인 대기 시간을 설정
 
 # 모든 <tr> 태그 찾기
 rows = driver.find_elements(By.CSS_SELECTOR, 'tr.datatable-v2_row__hkEus.dynamic-table-v2_row__ILVMx')
@@ -73,32 +68,37 @@ try:
         cells = row.find_elements(By.TAG_NAME, 'td')
         data = [cell.text for cell in cells]
 
+        # 현재 시간 가져오기
+        current_time = datetime.now().strftime('%H:%M:%S')
+
         # 필요한 데이터 추출
         stock_name = data[1]
-        period_daily = data[2]
-        period_weekly = data[3]
-        period_monthly = data[4]
-        period_ytd = data[5]
-        period_yearly = data[6]
-        period_3years = data[7]
+        closing_price = data[2]
+        high_price = data[3]
+        low_price = data[4]
+        change_value = data[5]
+        change_percent = data[6]
+        volume = data[7]
+        update_time = current_time
 
         # 프로시저 호출
-        cursor.callproc("update_or_insert_market_stock_performance", [
+        cursor.callproc("update_or_insert_market_stock_kosdaq_price", [
             stock_name,
-            period_daily,
-            period_weekly,
-            period_monthly,
-            period_ytd,
-            period_yearly,
-            period_3years
+            closing_price,
+            high_price,
+            low_price,
+            change_value,
+            change_percent,
+            volume,
+            update_time
         ])
 
     # 커밋
     conn.commit()
 
 except Exception as e:
-    conn.rollback()
     print("Error occurred:", e)
+    conn.rollback()
 
 finally:
     cursor.close()
@@ -112,4 +112,4 @@ end_time = time.time()
 execution_time = end_time - start_time
 print(f"Execution time: {execution_time:.2f} seconds")
 
-print("Commodity period data updated successfully!")
+print("Stock data updated successfully!")

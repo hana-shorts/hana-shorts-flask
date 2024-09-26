@@ -9,21 +9,31 @@ def get_market_data_for_today():
     today = datetime.today()
     today_str = today.strftime("%Y%m%d")
 
-    try:
-        # 오늘 날짜의 KOSPI 데이터 가져오기
-        df = stock.get_market_ohlcv(today_str, market="KOSPI")
-        df['date'] = today_str  # 거래일자 추가
-        # 거래량 또는 종가가 0인 데이터는 주말/공휴일일 수 있으므로 제외
-        if (df[['거래량', '시가', '고가', '저가', '종가']] == 0).all().any():
-            print(f"{today_str}의 데이터는 0값이므로 제외합니다.")
-            return None  # 데이터가 0이면 None 반환
-        return df
-    except Exception as e:
-        print(f"Error on {today_str}: {e}")
-        return None
+    all_data = []  # 모든 시장의 데이터를 저장할 리스트
+    markets = ["KOSPI", "KOSDAQ"]  # 가져올 시장 리스트
+
+    for market in markets:
+        try:
+            # 오늘 날짜의 시장 데이터를 가져오기
+            df = stock.get_market_ohlcv(today_str, market=market)
+            df['date'] = today_str  # 거래일자 추가
+
+            # 거래량 또는 종가가 0인 데이터는 주말/공휴일일 수 있으므로 제외
+            if (df[['거래량', '시가', '고가', '저가', '종가']] == 0).all().any():
+                print(f"{today_str}({market})의 데이터는 0값이므로 제외합니다.")
+                continue  # 해당 시장의 데이터를 건너뛰고 다음 시장으로 넘어감
+
+            all_data.append(df)
+        except Exception as e:
+            print(f"Error on {today_str} ({market}): {e}")
+
+    if all_data:
+        return pd.concat(all_data)
+    else:
+        return None  # 모든 시장의 데이터가 없을 경우 None 반환
 
 def insert_data_to_db(df):
-    """ KOSPI 데이터를 DB에 삽입하는 함수 """
+    """ KOSPI 및 KOSDAQ 데이터를 DB에 삽입하는 함수 """
     connection = get_db_connection()  # db_connection.py에서 가져온 함수로 DB 연결
     cursor = connection.cursor()
 
