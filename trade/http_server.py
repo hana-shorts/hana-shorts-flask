@@ -146,5 +146,19 @@ def get_chart():
 
     return jsonify(chart_data_dict)
 
+
+@app.route('/api/index_data', methods=['GET'])
+def get_index_data():
+    market_id = request.args.get('market_id')
+    if not market_id:
+        return jsonify({"error": "Market ID is required"}), 400
+    start_date = (datetime.today() - timedelta(days=180)).strftime('%Y%m%d')  # 6개월 전
+    end_date = datetime.today().strftime('%Y%m%d')  # 오늘 날짜
+    df = stock.get_index_ohlcv_by_date(start_date, end_date, market_id)
+    df = df.reset_index()
+    df['Date'] = df['날짜'].apply(lambda x: x.strftime('%Y-%m-%d'))
+    df_dict = df[['Date', '종가']].to_dict(orient='records')
+    return jsonify(df_dict)
+
 if __name__ == '__main__':
     app.run(port=5002)

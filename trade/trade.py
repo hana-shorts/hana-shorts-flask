@@ -91,9 +91,9 @@ kpa.auth()
 
 # tickers = stock.get_market_ticker_list()
 # print(tickers)
-
-df = stock.get_market_ohlcv("20140914","20240923", "250060")
-print(df)
+#
+# df = stock.get_market_ohlcv("20140914","20240923", "250060")
+# print(df)
 
 # from datetime import datetime, timedelta  # 추가
 # start_date = (datetime.today() - timedelta(days=365*5)).strftime('%Y%m%d')
@@ -101,3 +101,6 @@ print(df)
 #
 # print(start_date)
 # print(end_date)
+
+df = stock.get_index_fundamental("20210101", "20210130", "2001")
+print(df.head())

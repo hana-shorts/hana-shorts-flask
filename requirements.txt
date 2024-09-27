@@ -1,0 +1,14 @@
+tqdm
+pykrx
+selenium
+cx_Oracle
+Flask
+flask_cors
+pandas
+pandas_ta
+eventlet
+Flask-SocketIO
+requests
+pycryptodome
+asyncio
+numpy
