@@ -30,6 +30,13 @@ def get_recommendations():
         if not indicators or not selected_sectors:
             return jsonify({"error": "No indicators or sectors selected"}), 400
 
+        # Check if 'AI Model' is selected
+        if 'AI Model' in indicators:
+            use_ai_model = True
+            indicators.remove('AI Model')  # Remove 'AI Model' from indicators
+        else:
+            use_ai_model = False
+
         # 선택된 지표에 따른 컬럼 매핑
         indicator_columns = {
             'Relative Strength Index (RSI)': 'rsi_score',
@@ -52,7 +59,7 @@ def get_recommendations():
             if column:
                 selected_columns.append(column)
 
-        if not selected_columns:
+        if not selected_columns and not use_ai_model:
             return jsonify({"error": "Invalid indicators selected"}), 400
 
         # 업종에 해당하는 종목 코드와 종목명 가져오기
@@ -75,30 +82,113 @@ def get_recommendations():
         if not tickers:
             return jsonify({"error": "No tickers found for the selected sectors"}), 404
 
-        query = f"""
-        SELECT stock_code, {', '.join(selected_columns)}
-        FROM STOCK_MODEL_SCORES
-        WHERE stock_code IN ({', '.join([f"'{ticker}'" for ticker in tickers])}) 
-        AND trading_date = (SELECT MAX(trading_date) FROM STOCK_MODEL_SCORES)
-        """
-        df = pd.read_sql(query, con=connection)
-        connection.close()
+        # Fetch technical indicator scores
+        if selected_columns:
+            query = f"""
+            SELECT stock_code, {', '.join(selected_columns)}
+            FROM STOCK_MODEL_SCORES
+            WHERE stock_code IN ({', '.join([f"'{ticker}'" for ticker in tickers])}) 
+            AND trading_date = (SELECT MAX(trading_date) FROM STOCK_MODEL_SCORES)
+            """
+            df = pd.read_sql(query, con=connection)
+            df.columns = [col.lower() for col in df.columns]
+        else:
+            df = pd.DataFrame({'stock_code': tickers})
 
-        df.columns = [col.lower() for col in df.columns]
+        # Fetch AI scores if selected
+        if use_ai_model:
+            ai_query = f"""
+            SELECT stock_code, ai_score
+            FROM stock_ai_model_scores
+            WHERE stock_code IN ({', '.join([f"'{ticker}'" for ticker in tickers])}) 
+            AND trading_date = (SELECT MAX(trading_date) FROM stock_ai_model_scores)
+            """
+            df_ai = pd.read_sql(ai_query, con=connection)
+            df_ai.columns = [col.lower() for col in df_ai.columns]
+            # Merge with df
+            df = pd.merge(df, df_ai, on='stock_code', how='left')
+        else:
+            df['ai_score'] = None
+
+        connection.close()
 
         if df.empty:
             return jsonify({"error": "No data available for the latest date"}), 404
 
-        df['calculated_score'] = df[selected_columns].astype(float).mean(axis=1)
+        # Convert scores to numeric, handle missing values
+        score_columns = selected_columns + ['ai_score'] if use_ai_model else selected_columns
+        for col in score_columns:
+            df[col] = pd.to_numeric(df[col], errors='coerce')
+
+        # Rank the scores
+        for col in selected_columns:
+            df[f"{col}_rank"] = df[col].rank(ascending=False, method='min')
+
+        if use_ai_model:
+            # For AI scores, rank them
+            df['ai_score_rank'] = df['ai_score'].rank(ascending=False, method='min')
+
+        # Calculate average rank
+        rank_columns = [f"{col}_rank" for col in selected_columns]
+        if use_ai_model:
+            rank_columns.append('ai_score_rank')
+
+        df['average_rank'] = df[rank_columns].mean(axis=1)
+
         df['stock_name'] = df['stock_code'].map(ticker_names)
 
-        # 매수 상위 5개, 매도 하위 5개
-        buy_recommendations = df.sort_values(by='calculated_score', ascending=False).head(5)['stock_name'].tolist()
-        sell_recommendations = df.sort_values(by='calculated_score', ascending=True).head(5)['stock_name'].tolist()
+        # Sort by average rank
+        df_sorted = df.sort_values(by='average_rank', ascending=True)
 
+        # 매수 상위 5개, 매도 하위 5개
+        buy_recommendations = df_sorted.head(5)
+        sell_recommendations = df_sorted.tail(5)
+
+        # Fetch recent 6 months of data for each recommended stock
+        end_date = datetime.today()
+        start_date = end_date - timedelta(days=180)
+        start_date_str = start_date.strftime('%Y%m%d')
+        end_date_str = end_date.strftime('%Y%m%d')
+
+        connection = get_db_connection()
+        buy_data = {}
+        for index, row in buy_recommendations.iterrows():
+            stock_code = row['stock_code']
+            cursor = connection.cursor()
+            cursor.execute(f"""
+                SELECT trading_date, closing_price
+                FROM daily_stock_price
+                WHERE stock_code = :stock_code
+                AND trading_date BETWEEN :start_date AND :end_date
+                ORDER BY trading_date
+            """, {'stock_code': stock_code, 'start_date': start_date_str, 'end_date': end_date_str})
+            price_data = cursor.fetchall()
+            price_df = pd.DataFrame(price_data, columns=['trading_date', 'close_price'])
+            buy_data[stock_code] = price_df.to_dict(orient='records')
+
+        sell_data = {}
+        for index, row in sell_recommendations.iterrows():
+            stock_code = row['stock_code']
+            cursor = connection.cursor()
+            cursor.execute(f"""
+                SELECT trading_date, closing_price
+                FROM daily_stock_price
+                WHERE stock_code = :stock_code
+                AND trading_date BETWEEN :start_date AND :end_date
+                ORDER BY trading_date
+            """, {'stock_code': stock_code, 'start_date': start_date_str, 'end_date': end_date_str})
+            price_data = cursor.fetchall()
+            price_df = pd.DataFrame(price_data, columns=['trading_date', 'close_price'])
+            sell_data[stock_code] = price_df.to_dict(orient='records')
+
+        connection.close()
+
+        # 기존의 result 딕셔너리 생성 부분을 수정합니다.
         result = {
-            'buy': buy_recommendations,
-            'sell': sell_recommendations
+            'buy': buy_recommendations[['stock_code', 'stock_name']].to_dict(orient='records'),
+            'sell': sell_recommendations[['stock_code', 'stock_name']].to_dict(orient='records'),
+            'buy_data': buy_data,
+            'sell_data': sell_data
         }
 
         return jsonify(result)

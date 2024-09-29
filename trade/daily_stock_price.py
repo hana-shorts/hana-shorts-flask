@@ -8,6 +8,7 @@ def get_market_data_for_today():
     """ 오늘 날짜의 영업일 데이터를 가져오는 함수 """
     today = datetime.today()
     today_str = today.strftime("%Y%m%d")
+    # today_str = "20240927"
 
     all_data = []  # 모든 시장의 데이터를 저장할 리스트
     markets = ["KOSPI", "KOSDAQ"]  # 가져올 시장 리스트
@@ -18,8 +19,7 @@ def get_market_data_for_today():
             df = stock.get_market_ohlcv(today_str, market=market)
             df['date'] = today_str  # 거래일자 추가
 
-            # 거래량 또는 종가가 0인 데이터는 주말/공휴일일 수 있으므로 제외
-            if (df[['거래량', '시가', '고가', '저가', '종가']] == 0).all().any():
+            if (df[['거래량', '시가', '고가', '저가']] == 0).all().any():
                 print(f"{today_str}({market})의 데이터는 0값이므로 제외합니다.")
                 continue  # 해당 시장의 데이터를 건너뛰고 다음 시장으로 넘어감
 
