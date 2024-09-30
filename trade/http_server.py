@@ -20,6 +20,46 @@ kpa.auth()
 app = Flask(__name__)
 CORS(app)
 
+
+@app.route('/api/get_research_analysis', methods=['GET'])
+def get_research_analysis():
+    try:
+        connection = get_db_connection()
+        cursor = connection.cursor()
+
+        # 모든 연구 분석 데이터를 가져옵니다.
+        cursor.execute("""
+            SELECT category, image_url, author, title, 
+                   TO_CHAR(article_date, 'YY/MM/DD') AS article_date,
+                   article_time, download_url
+            FROM research_analysis
+            ORDER BY category, article_date DESC
+        """)
+
+        rows = cursor.fetchall()
+        connection.close()
+
+        # 데이터를 카테고리별로 그룹화합니다.
+        research_data = {}
+        for row in rows:
+            category = row[0]
+            if category not in research_data:
+                research_data[category] = []
+            research_data[category].append({
+                "image": row[1],
+                "author": row[2],
+                "title": row[3],
+                "textLine1": row[4],
+                "textLine2": row[5],
+                "fileLink": row[6]
+            })
+
+        return jsonify(research_data)
+
+    except Exception as e:
+        print(f"Error occurred: {e}")
+        return jsonify({"error": str(e)}), 500
+
 @app.route('/api/get_recommendations', methods=['POST'])
 def get_recommendations():
     try:
