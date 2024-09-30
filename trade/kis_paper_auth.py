@@ -27,7 +27,7 @@ clearConsole = lambda: os.system('cls' if os.name in ('nt', 'dos') else 'clear')
 
 key_bytes = 32
 
-config_root = 'D:\\hanashorts\\flask\\hanashorts\\trade\\'
+config_root = 'D:\\pycharm-workspace\\trade\\'
 token_tmp = config_root + 'KIS_PAPER' + datetime.today().strftime("%Y%m%d")
 
 if os.path.exists(token_tmp) == False:
