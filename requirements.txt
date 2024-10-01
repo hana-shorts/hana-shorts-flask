@@ -1,7 +1,7 @@
 tqdm
 pykrx
 selenium
-cx_Oracle
+oracledb
 Flask
 flask_cors
 pandas
@@ -12,3 +12,5 @@ requests
 pycryptodome
 asyncio
 numpy
+yaml
+beautifulsoup4

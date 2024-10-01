@@ -139,9 +139,6 @@ def calculate_scores(df):
     price_channel_low = df['Price_Channel_Low'].iloc[-1]
     scores['price_channel_score'] = (close - price_channel_low) / (price_channel_high - price_channel_low) if (price_channel_high - price_channel_low) != 0 else 0
 
-    # AI 점수는 현재 0으로 설정
-    scores['ai_score'] = 0
-
     return scores
 
 # stock_model_scores.py
@@ -193,7 +190,6 @@ def main():
             ON (T.stock_code = S.stock_code AND T.trading_date = S.trading_date)
             WHEN MATCHED THEN
                 UPDATE SET
-                    ai_score = :ai_score,
                     ma_score = :ma_score,
                     rsi_score = :rsi_score,
                     bb_score = :bb_score,
@@ -207,16 +203,15 @@ def main():
                     vwap_score = :vwap_score,
                     price_channel_score = :price_channel_score
             WHEN NOT MATCHED THEN
-                INSERT (stock_code, trading_date, ai_score, ma_score, rsi_score, bb_score, macd_score, stochastic_score,
+                INSERT (stock_code, trading_date, ma_score, rsi_score, bb_score, macd_score, stochastic_score,
                         adx_score, cci_score, momentum_score, obv_score, ichimoku_score, vwap_score, price_channel_score)
-                VALUES (:stock_code, :trading_date, :ai_score, :ma_score, :rsi_score, :bb_score, :macd_score, :stochastic_score,
+                VALUES (:stock_code, :trading_date, :ma_score, :rsi_score, :bb_score, :macd_score, :stochastic_score,
                         :adx_score, :cci_score, :momentum_score, :obv_score, :ichimoku_score, :vwap_score, :price_channel_score)
             """
 
             data = {
                 'stock_code': ticker,
                 'trading_date': df.index[-1].strftime('%Y%m%d'),
-                'ai_score': str(scores['ai_score']),
                 'ma_score': str(scores['ma_score']),
                 'rsi_score': str(scores['rsi_score']),
                 'bb_score': str(scores['bb_score']),
