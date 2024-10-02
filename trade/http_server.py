@@ -18,7 +18,66 @@ ka.auth()
 kpa.auth()
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, supports_credentials=True)
+
+
+@app.route('/api/balance_info', methods=['GET'])
+def get_balance_info():
+    try:
+        rt_data = kpb.get_inquire_balance_obj()
+        balance_info = rt_data.to_dict(orient='records')[0]  # 첫 번째 레코드 사용
+        return jsonify(balance_info), 200
+    except Exception as e:
+        print(f"Error occurred while fetching balance info: {e}")
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/holdings', methods=['GET'])
+def get_holdings():
+    try:
+        rt_data = kpb.get_inquire_balance_lst()
+        holdings = rt_data.to_dict(orient='records')
+        return jsonify(holdings), 200
+    except Exception as e:
+        print(f"Error occurred while fetching holdings: {e}")
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/api/place_order', methods=['POST'])
+def place_order():
+    try:
+        data = request.get_json()
+        order_type = data.get('order_type')  # 'buy' or 'sell'
+        stock_code = data.get('stock_code')  # 6-digit stock code
+        quantity = data.get('quantity')      # integer
+        price = data.get('price')            # integer price per unit
+
+        if not all([order_type, stock_code, quantity, price]):
+            return jsonify({"error": "Missing order details"}), 400
+
+        # Call get_order_cash function
+        rt_data = kpb.get_order_cash(ord_dv=order_type, itm_no=stock_code, qty=quantity, unpr=price)
+
+        # Convert rt_data to dict
+        order_result = rt_data.to_dict(orient='records')
+
+        return jsonify({"status": "success", "order_result": order_result}), 200
+
+    except Exception as e:
+        print(f"Error occurred while placing order: {e}")
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/order_history', methods=['GET'])
+def get_order_history():
+    try:
+        # Get all orders
+        rt_data = kpb.get_inquire_daily_ccld_lst(dv="01")  # '00' for all orders
+        order_history = rt_data.to_dict(orient='records')
+
+        return jsonify(order_history), 200
+
+    except Exception as e:
+        print(f"Error occurred while fetching order history: {e}")
+        return jsonify({"error": str(e)}), 500
 
 
 @app.route('/api/get_research_analysis', methods=['GET'])

@@ -54,16 +54,19 @@ kpa.auth()
 
 # # [국내주식] 주문/계좌 > 주식현금주문 (매수매도구분 buy,sell + 종목번호 6자리 + 주문수량 + 주문단가)
 # # 지정가 기준이며 시장가 옵션(주문구분코드)을 사용하는 경우 kis_domstk.py get_order_cash 수정요망!
-# rt_data = kpb.get_order_cash(ord_dv="sell",itm_no="005930", qty=100, unpr=67000)
+# rt_data = kpb.get_order_cash(ord_dv="buy",itm_no="445680", qty=100, unpr=16110)
 # print(rt_data)
 
-# # [국내주식] 주문/계좌 > 주식일별주문체결조회
-# rt_data = kb.get_inquire_daily_ccld_lst(dv="01")
+# # # [국내주식] 주문/계좌 > 주식일별주문체결조회
+# rt_data = kpb.get_inquire_daily_ccld_lst(dv="01")
+# print(rt_data)
+
+# rt_data = kpb.get_inquire_daily_ccld_obj(dv="01")
 # print(rt_data)
 
 # # [국내주식] 주문/계좌 > 주식잔고조회
-# rt_data = kpb.get_inquire_balance_lst()
-# print(rt_data)
+rt_data = kpb.get_inquire_balance_lst()
+print(rt_data)
 
 # # [국내주식] 주문/계좌 > 주식잔고조회
 # rt_data = kpb.get_inquire_balance_obj()
@@ -102,5 +105,5 @@ kpa.auth()
 # print(start_date)
 # print(end_date)
 
-df = stock.get_index_fundamental("20210101", "20210130", "2001")
-print(df.head())
+# df = stock.get_index_fundamental("20210101", "20210130", "2001")
+# print(df.head())

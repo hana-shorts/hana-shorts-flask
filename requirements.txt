@@ -12,5 +12,5 @@ requests
 pycryptodome
 asyncio
 numpy
-yaml
+pyyaml
 beautifulsoup4
