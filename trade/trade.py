@@ -65,8 +65,8 @@ kpa.auth()
 # print(rt_data)
 
 # # [국내주식] 주문/계좌 > 주식잔고조회
-rt_data = kpb.get_inquire_balance_lst()
-print(rt_data)
+# rt_data = kpb.get_inquire_balance_lst()
+# print(rt_data)
 
 # # [국내주식] 주문/계좌 > 주식잔고조회
 # rt_data = kpb.get_inquire_balance_obj()
@@ -95,7 +95,7 @@ print(rt_data)
 # tickers = stock.get_market_ticker_list()
 # print(tickers)
 #
-# df = stock.get_market_ohlcv("20140914","20240923", "250060")
+# df = stock.get_market_ohlcv("20241002","20241002", "005930")
 # print(df)
 
 # from datetime import datetime, timedelta  # 추가

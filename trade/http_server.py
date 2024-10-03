@@ -5,6 +5,7 @@ from flask_cors import CORS
 from datetime import datetime, timedelta
 import pandas as pd
 from db_connection import get_db_connection
+from news import fetch_latest_news, fetch_popular_news
 
 # KIS 인증 모듈 임포트
 import kis_auth as ka
@@ -19,6 +20,56 @@ kpa.auth()
 
 app = Flask(__name__)
 CORS(app, supports_credentials=True)
+
+
+
+@app.route('/api/latest_news', methods=['GET'])
+def get_latest_news():
+    news = fetch_latest_news()
+    if news:
+        return jsonify(news)
+    return jsonify({'error': 'Failed to fetch latest news'}), 500
+
+@app.route('/api/popular_news', methods=['GET'])
+def get_popular_news():
+    news = fetch_popular_news()
+    if news:
+        return jsonify(news)
+    return jsonify({'error': 'Failed to fetch popular news'}), 500
+
+@app.route('/api/current_price', methods=['GET'])
+def get_current_price():
+    stock_code = request.args.get('code')
+    if not stock_code:
+        return jsonify({"error": "Stock code is required"}), 400
+
+    # today = datetime.today().strftime('%Y%m%d')
+    today = "20241002"
+
+    try:
+        # 오늘의 데이터를 가져옵니다.
+        chart_data = stock.get_market_ohlcv(today, today, stock_code)
+        if chart_data.empty:
+            return jsonify({"error": "No data available for today"}), 404
+
+        # 필요한 데이터만 선택하여 반환합니다.
+        current_price_data = chart_data.iloc[0].to_dict()
+        # 필요한 필드만 추출 (예: 종가)
+        response_data = {
+            "trading_date": current_price_data.get("날짜", ""),
+            "closing_price": current_price_data.get("종가", 0),
+            "opening_price": current_price_data.get("시가", 0),
+            "high_price": current_price_data.get("고가", 0),
+            "low_price": current_price_data.get("저가", 0),
+            "volume": current_price_data.get("거래량", 0),
+            "change_rate": current_price_data.get("등락률", 0)
+        }
+
+        return jsonify(response_data), 200
+
+    except Exception as e:
+        print(f"Error occurred while fetching current price: {e}")
+        return jsonify({"error": str(e)}), 500
 
 
 @app.route('/api/balance_info', methods=['GET'])
