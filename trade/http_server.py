@@ -43,8 +43,8 @@ def get_current_price():
     if not stock_code:
         return jsonify({"error": "Stock code is required"}), 400
 
-    # today = datetime.today().strftime('%Y%m%d')
-    today = "20241004"
+    today = datetime.today().strftime('%Y%m%d')
+    # today = "20241004"
 
     try:
         # 오늘의 데이터를 가져옵니다.
