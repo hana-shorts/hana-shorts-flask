@@ -2,6 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
 from urllib.parse import parse_qs, urlparse
+import random  # 랜덤 모듈 추가
 
 def fetch_latest_news():
     try:
@@ -117,6 +118,10 @@ def fetch_popular_news():
                 'press': press,
                 'link': final_article_link
             })
+
+        # 시드값을 설정하여 뉴스 리스트를 섞음 (예: 시드값 42)
+        random.seed(42)  # 원하는 시드값으로 변경 가능
+        random.shuffle(news_list)
 
         return news_list
     except Exception as e:
