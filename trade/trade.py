@@ -95,7 +95,7 @@ kpa.auth()
 # tickers = stock.get_market_ticker_list()
 # print(tickers)
 #
-df = stock.get_market_ohlcv("20241005","20241005", "005930")
+df = stock.get_market_ohlcv("20241005","20241011", "00104K")
 print(df)
 
 # from datetime import datetime, timedelta  # 추가
